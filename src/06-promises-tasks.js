@@ -28,8 +28,16 @@
  *      .catch((error) => console.log(error.message)) // 'Error: Wrong parameter is passed!
  *                                                    //  Ask her again.';
  */
-function willYouMarryMe(/* isPositiveAnswer */) {
-  throw new Error('Not implemented');
+function willYouMarryMe(isPositiveAnswer) {
+  return new Promise((resolve, reject) => {
+    if (typeof isPositiveAnswer !== 'boolean') {
+      reject(new Error('Wrong parameter is passed! Ask her again.'));
+    } else if (isPositiveAnswer) {
+      resolve('Hooray!!! She said "Yes"!');
+    } else {
+      resolve('Oh no, she said "No".');
+    }
+  });
 }
 
 
@@ -48,8 +56,13 @@ function willYouMarryMe(/* isPositiveAnswer */) {
  *    })
  *
  */
-function processAllPromises(/* array */) {
-  throw new Error('Not implemented');
+function processAllPromises(array) {
+  // const res = [];
+  return Promise.all(array)
+    .then((responses) => responses.map((res) => res));
+  // return Promise.all(array).then((values) => {
+  //   res.push(values);
+  // });
 }
 
 /**
@@ -71,8 +84,17 @@ function processAllPromises(/* array */) {
  *    })
  *
  */
-function getFastestPromise(/* array */) {
-  throw new Error('Not implemented');
+function getFastestPromise(array) {
+  return new Promise((resolve, reject) => {
+    array.forEach((promise) => {
+      if (!(promise instanceof Promise)) {
+        reject(new Error('Not all elements are promises'));
+      }
+    });
+    Promise.race(array)
+      .then((result) => resolve(result))
+      .catch((error) => reject(error));
+  });
 }
 
 /**
@@ -92,8 +114,29 @@ function getFastestPromise(/* array */) {
  *    });
  *
  */
-function chainPromises(/* array, action */) {
-  throw new Error('Not implemented');
+function chainPromises(array, action) {
+  return new Promise((resolve) => {
+    const result = [];
+    let counter = 0;
+    const processNext = () => {
+      if (counter >= array.length) {
+        resolve(result);
+        return;
+      }
+      const promise = array[counter];
+      promise
+        .then((value) => {
+          result.push(value);
+          counter += 1;
+          processNext();
+        })
+        .catch(() => {
+          counter += 1;
+          processNext();
+        });
+    };
+    processNext();
+  }).then((result) => result.reduce(action));
 }
 
 module.exports = {
